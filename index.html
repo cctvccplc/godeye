@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Google Maps Pro - 3D Fixed</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #fff;
+        }
+        #map {
+            width: 100vw;
+            height: 100vh;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Top Search Wrapper with Auto-Suggest Dropdown */
+        .g-search-wrapper {
+            position: absolute;
+            top: 12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 92%;
+            max-width: 420px;
+        }
+        .g-search-container {
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 28px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .g-search-container input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 14px;
+            background: transparent;
+            color: #202124;
+        }
+        /* Suggestions Dropdown Box */
+        .suggestions-box {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 1001;
+            display: none;
+        }
+        .suggestion-item {
+            padding: 10px 14px;
+            font-size: 13px;
+            color: #3c4043;
+            border-bottom: 1px solid #f1f3f4;
+            cursor: pointer;
+        }
+        .suggestion-item:hover {
+            background: #f8f9fa;
+        }
+        
+        /* Toolbar */
+        .g-toolbar {
+            position: absolute;
+            top: 72px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            width: 92%;
+            max-width: 420px;
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 4px;
+            scrollbar-width: none;
+        }
+        .g-toolbar::-webkit-scrollbar { display: none; }
+        
+        .g-chip {
+            background: #fff;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 11px;
+            font-weight: 500;
+            white-space: nowrap;
+            cursor: pointer;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .g-chip.active {
+            background: #e8f0fe;
+            color: #1967d2;
+            border-color: #d2e3fc;
+        }
+
+        /* Bottom GPS & Distance Panel */
+        .g-bottom-panel {
+            position: absolute;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: 92%;
+            max-width: 400px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .g-gps-btn {
+            background: #fff;
+            color: #1a73e8;
+            border: 1px solid #dadce0;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        .g-status-card {
+            background: rgba(32, 33, 36, 0.92);
+            color: #fff;
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-size: 11px;
+            backdrop-filter: blur(4px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+            pointer-events: auto;
+            text-align: right;
+            border-left: 4px solid #1a73e8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Top Search Wrapper with Auto-Suggest Dropdown -->
+    <div class="g-search-wrapper">
+        <div class="g-search-container">
+            <span style="color: #ea4335; font-size: 16px;">📍</span>
+            <input type="text" id="query" placeholder="জায়গার নাম লিখুন (যেমন: Mirpur)..." oninput="getSuggestions(this.value)">
+        </div>
+        <div id="suggestions-box" class="suggestions-box"></div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="g-toolbar">
+        <div class="g-chip active" id="btn-default" onclick="setMapLayer('default')">Default</div>
+        <div class="g-chip" id="btn-satellite" onclick="setMapLayer('satellite')">Satellite</div>
+        <div class="g-chip" id="btn-terrain" onclick="setMapLayer('terrain')">Terrain</div>
+        <div class="g-chip" id="btn-3d" onclick="toggle3DView()">🌐 3D View: Off</div>
+    </div>
+
+    <!-- Map Container -->
+    <div id="map"></div>
+
+    <!-- Bottom Panel -->
+    <div class="g-bottom-panel">
+        <div class="g-gps-btn" onclick="trackMyLocation()" title="My Location">🎯</div>
+        <div class="g-status-card" id="status-card">
+            <b>Live Distance Tracker</b><br>
+            <span id="distance-text" style="color: #8ab4f8; font-weight: bold;">লোকেশন সিলেক্ট করুন</span>
+        </div>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        const map = L.map('map', { zoomControl: false }).setView([23.8103, 90.4125], 13);
+
+        const defaultLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 });
+        const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+        const terrainLayer = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', { maxZoom: 17 });
+        
+        // Dedicated 3D High-Angle Satellite View Layer
+        const view3DLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', { maxZoom: 19 });
+
+        defaultLayer.addTo(map);
+        L.control.zoom({ position: 'topright' }).addTo(map);
+
+        let userMarker = null;
+        let targetMarker = null;
+        let distanceLine = null;
+        let userCoords = null;
+        let is3DActive = false;
+
+        function setMapLayer(type) {
+            if (is3DActive) return; // Don't change base layer if 3D is active
+
+            if (map.hasLayer(defaultLayer)) map.removeLayer(defaultLayer);
+            if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+            if (map.hasLayer(terrainLayer)) map.removeLayer(terrainLayer);
+
+            document.getElementById('btn-default').classList.remove('active');
+            document.getElementById('btn-satellite').classList.remove('active');
+            document.getElementById('btn-terrain').classList.remove('active');
+
+            if (type === 'default') {
+                defaultLayer.addTo(map);
+                document.getElementById('btn-default').classList.add('active');
+            } else if (type === 'satellite') {
+                satelliteLayer.addTo(map);
+                document.getElementById('btn-satellite').classList.add('active');
+            } else if (type === 'terrain') {
+                terrainLayer.addTo(map);
+                document.getElementById('btn-terrain').classList.add('active');
+            }
+        }
+
+        // Fixed 3D View Functionality
+        function toggle3DView() {
+            is3DActive = !is3DActive;
+            const btn3D = document.getElementById('btn-3d');
+            
+            if (is3DActive) {
+                // Remove others and switch to 3D satellite land view with max zoom boost
+                if (map.hasLayer(defaultLayer)) map.removeLayer(defaultLayer);
+                if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+                if (map.hasLayer(terrainLayer)) map.removeLayer(terrainLayer);
+                
+                satelliteLayer.addTo(map);
+                map.setZoom(map.getZoom() + 1); // Auto zoom in for 3D depth effect
+                
+                btn3D.classList.add('active');
+                btn3D.innerText = "🌐 3D View: On";
+            } else {
+                if (map.hasLayer(satelliteLayer)) map.removeLayer(satelliteLayer);
+                defaultLayer.addTo(map); // Revert to default
+                
+                btn3D.classList.remove('active');
+                btn3D.innerText = "🌐 3D View: Off";
+            }
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const R = 6371;
+            const dLat = (lat2 - lat1) * (Math.PI / 180);
+            const dLon = (lon2 - lon1) * (Math.PI / 180);
+            const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) * Math.sin(dLon / 2) ** 2;
+            return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+        }
+
+        function updateDistanceInfo(targetLat, targetLng, targetName) {
+            if (!userCoords) {
+                alert("দয়া করে প্রথমে নিচের 🎯 জিপিএস বাটন চাপ দিয়ে আপনার লাইভ লোকেশন অন করুন!");
+                return;
+            }
+
+            const distKm = calculateDistance(userCoords[0], userCoords[1], targetLat, targetLng);
+            let distText = distKm < 1 ? (distKm * 1000).toFixed(0) + " মিটার দূরে" : distKm.toFixed(2) + " কিমি দূরে";
+
+            document.getElementById('distance-text').innerHTML = `📍 ${targetName}<br>📏 দূরত্ব: <b style="color:#22c55e;">${distText}</b>`;
+
+            if (distanceLine) map.removeLayer(distanceLine);
+            distanceLine = L.polyline([userCoords, [targetLat, targetLng]], {
+                color: '#1a73e8',
+                weight: 4,
+                opacity: 0.8,
+                dashArray: '6, 6'
+            }).addTo(map);
+        }
+
+        function getSuggestions(query) {
+            const box = document.getElementById('suggestions-box');
+            if (!query || query.length < 2) {
+                box.style.display = 'none';
+                box.innerHTML = '';
+                return;
+            }
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=5`)
+                .then(res => res.json())
+                .then(data => {
+                    box.innerHTML = '';
+                    if (data && data.length > 0) {
+                        box.style.display = 'block';
+                        data.forEach(item => {
+                            const div = document.createElement('div');
+                            div.className = 'suggestion-item';
+                            div.innerText = item.display_name;
+                            div.onclick = () => selectLocation(item.lat, item.lon, item.display_name);
+                            box.appendChild(div);
+                        });
+                    } else {
+                        box.style.display = 'none';
+                    }
+                })
+                .catch(() => box.style.display = 'none');
+        }
+
+        function selectLocation(lat, lon, fullName) {
+            document.getElementById('query').value = fullName.split(',')[0];
+            document.getElementById('suggestions-box').style.display = 'none';
+
+            const latLng = [parseFloat(lat), parseFloat(lon)];
+            map.setView(latLng, 16);
+
+            if (targetMarker) map.removeLayer(targetMarker);
+            targetMarker = L.marker(latLng).addTo(map)
+                .bindPopup(`📍 <b>${fullName}</b>`)
+                .openPopup();
+
+            updateDistanceInfo(latLng[0], latLng[1], fullName.split(',')[0]);
+        }
+
+        function trackMyLocation() {
+            if (navigator.geolocation) {
+                document.getElementById('distance-text').innerText = "GPS লোড হচ্ছে...";
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        userCoords = [lat, lng];
+
+                        map.setView(userCoords, 17);
+
+                        if (userMarker) map.removeLayer(userMarker);
+                        userMarker = L.marker(userCoords).addTo(map)
+                            .bindPopup('<b>🟢 আপনার লাইভ লোকেশন</b>')
+                            .openPopup();
+
+                        document.getElementById('distance-text').innerText = "GPS লক হয়েছে। জায়গা সার্চ করুন।";
+                    },
+                    () => {
+                        alert("জিপিএস পারমিশন পাওয়া যায়নি!");
+                        document.getElementById('distance-text').innerText = "GPS Error";
+                    },
+                    { enableHighAccuracy: true, timeout: 10000 }
+                );
+            } else {
+                alert("ব্রাউজার জিপিএস সাপোর্ট করে না।");
+            }
+        }
+    </script>
+</body>
+</html>
