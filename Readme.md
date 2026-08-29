@@ -1,7 +1,7 @@
 # 🗺️ Google Maps Pro - Web Console
 
 
-https://cctvccplc.github.io/GODEYE/
+https://cctvccplc.github.io/godeye
 
 
 
