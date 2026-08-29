@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>God's Eye View - Intelligence Console</title>
     <!-- CesiumJS CSS -->
     <link rel="stylesheet" href="https://cesium.com/downloads/cesiumjs/releases/1.114/Build/Cesium/Widgets/widgets.css">
@@ -13,7 +13,7 @@
     <style>
         :root {
             --bg-color: #05070b;
-            --panel-bg: rgba(8, 12, 20, 0.88);
+            --panel-bg: rgba(8, 12, 20, 0.9);
             --accent-color: #00f3ff;
             --accent-glow: rgba(0, 243, 255, 0.2);
             --border-color: rgba(0, 243, 255, 0.25);
@@ -33,18 +33,18 @@
 
         /* Title Bar */
         #title-bar {
-            position: absolute; top: 20px; left: 20px; z-index: 1000;
+            position: absolute; top: 15px; left: 15px; z-index: 1000;
             background: var(--panel-bg); border: 1px solid var(--border-color);
-            padding: 12px 18px; border-radius: 12px; backdrop-filter: blur(12px);
+            padding: 10px 14px; border-radius: 12px; backdrop-filter: blur(12px);
             box-shadow: 0 0 25px var(--accent-glow);
-            max-width: 320px;
+            max-width: calc(100vw - 30px); width: 300px;
         }
         #title-bar h1 {
-            margin: 0; font-size: 16px; font-family: 'JetBrains Mono', monospace;
-            letter-spacing: 1.5px; color: var(--accent-color); display: flex; align-items: center; gap: 8px;
+            margin: 0; font-size: 14px; font-family: 'JetBrains Mono', monospace;
+            letter-spacing: 1px; color: var(--accent-color); display: flex; align-items: center; gap: 6px;
         }
         #title-bar .subtitle {
-            margin: 3px 0 10px 0; font-size: 9px; color: var(--text-muted); letter-spacing: 2px;
+            margin: 2px 0 8px 0; font-size: 8.5px; color: var(--text-muted); letter-spacing: 1.5px;
         }
 
         /* Search bar */
@@ -52,126 +52,124 @@
         #geo-search {
             flex: 1; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
             color: var(--text-main); font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            padding: 7px 9px; border-radius: 8px; outline: none;
+            padding: 6px 8px; border-radius: 8px; outline: none;
         }
         #geo-search:focus { border-color: var(--accent-color); box-shadow: 0 0 8px var(--accent-glow); }
         #geo-search-btn {
             background: rgba(0, 243, 255, 0.12); border: 1px solid var(--border-color);
-            color: var(--accent-color); border-radius: 8px; padding: 0 10px; cursor: pointer;
+            color: var(--accent-color); border-radius: 8px; padding: 0 8px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
         }
-        #geo-search-btn:hover { background: rgba(0,243,255,0.25); }
         #search-results {
-            margin-top: 6px; max-height: 160px; overflow-y: auto; display: none;
+            margin-top: 6px; max-height: 140px; overflow-y: auto; display: none;
         }
         .search-result-item {
-            font-size: 10.5px; padding: 6px 8px; border-radius: 6px; cursor: pointer;
+            font-size: 10px; padding: 5px 6px; border-radius: 6px; cursor: pointer;
             color: var(--text-muted); border: 1px solid transparent;
         }
         .search-result-item:hover { background: rgba(0,243,255,0.1); color: var(--text-main); border-color: var(--border-color); }
 
         /* Style Indicator */
         #style-indicator {
-            position: absolute; top: 20px; right: 20px; z-index: 1000;
+            position: absolute; top: 15px; right: 15px; z-index: 1000;
             background: var(--panel-bg); border: 1px solid var(--border-color);
-            padding: 10px 16px; border-radius: 10px; backdrop-filter: blur(10px);
-            font-family: 'JetBrains Mono', monospace; font-size: 11px;
-            text-align: right;
+            padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(10px);
+            font-family: 'JetBrains Mono', monospace; font-size: 10px;
+            text-align: right; display: none;
         }
-        .indicator-value { color: var(--accent-color); font-weight: 700; margin-left: 6px; }
-        #indicator-clock { display: block; margin-top: 6px; font-size: 10px; color: var(--text-muted); letter-spacing: 1px; }
+        @media(min-width: 768px) { #style-indicator { display: block; } }
+        .indicator-value { color: var(--accent-color); font-weight: 700; margin-left: 4px; }
+        #indicator-clock { display: block; margin-top: 4px; font-size: 9.5px; color: var(--text-muted); }
 
         /* Coordinates readout - bottom left */
         #coord-panel {
-            position: absolute; bottom: 20px; left: 20px; z-index: 1000;
+            position: absolute; bottom: 75px; left: 15px; z-index: 1000;
             background: var(--panel-bg); border: 1px solid var(--border-color);
-            padding: 10px 14px; border-radius: 10px; backdrop-filter: blur(10px);
-            font-family: 'JetBrains Mono', monospace; font-size: 10.5px; color: var(--text-muted);
-            line-height: 1.7; min-width: 190px;
+            padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(10px);
+            font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--text-muted);
+            line-height: 1.5; min-width: 160px; pointer-events: none;
         }
         #coord-panel b { color: var(--accent-color); }
-        #coord-panel .row { display: flex; justify-content: space-between; gap: 14px; }
+        #coord-panel .row { display: flex; justify-content: space-between; gap: 10px; }
 
-        /* Info / weather / measure panel - right side */
+        /* Info panel */
         #info-panel {
-            position: absolute; top: 100px; right: 20px; z-index: 1000;
+            position: absolute; top: 130px; right: 15px; z-index: 1000;
             background: var(--panel-bg); border: 1px solid var(--border-color);
-            padding: 14px 16px; border-radius: 12px; backdrop-filter: blur(12px);
-            font-family: 'JetBrains Mono', monospace; font-size: 11px; width: 230px;
+            padding: 12px; border-radius: 12px; backdrop-filter: blur(12px);
+            font-family: 'JetBrains Mono', monospace; font-size: 10.5px; width: 220px;
             display: none; box-shadow: 0 0 25px var(--accent-glow);
         }
         #info-panel h3 {
-            margin: 0 0 8px 0; font-size: 11px; letter-spacing: 1px; color: var(--accent-color);
+            margin: 0 0 6px 0; font-size: 10.5px; letter-spacing: 1px; color: var(--accent-color);
             display: flex; justify-content: space-between; align-items: center;
         }
         #info-panel .close-btn { cursor: pointer; color: var(--text-muted); }
-        #info-panel .close-btn:hover { color: var(--warn-color); }
-        #info-panel .line { display: flex; justify-content: space-between; margin: 4px 0; color: var(--text-muted); }
+        #info-panel .line { display: flex; justify-content: space-between; margin: 3px 0; color: var(--text-muted); }
         #info-panel .line span:last-child { color: var(--text-main); }
 
-        /* Command Dock / Control Panel */
+        /* Command Dock / Control Panel - Mobile Optimized & Scrollable */
         #command-dock {
-            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 1000; display: flex; gap: 8px; background: var(--panel-bg);
-            border: 1px solid var(--border-color); padding: 10px 14px; border-radius: 14px;
-            backdrop-filter: blur(12px); box-shadow: 0 0 30px rgba(0,0,0,0.6);
-            max-width: 90vw; flex-wrap: wrap; justify-content: center;
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            z-index: 1000; display: flex; gap: 5px; background: var(--panel-bg);
+            border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 14px;
+            backdrop-filter: blur(12px); box-shadow: 0 0 25px rgba(0,0,0,0.7);
+            max-width: 96vw; max-height: 28vh; overflow-y: auto; overflow-x: auto;
+            flex-wrap: wrap; justify-content: center; align-content: center;
         }
         .dock-btn {
             background: rgba(0, 243, 255, 0.05); border: 1px solid var(--border-color);
-            color: var(--text-main); padding: 8px 12px; border-radius: 8px; cursor: pointer;
-            font-size: 11.5px; font-family: 'JetBrains Mono', monospace; font-weight: 600;
-            transition: all 0.2s ease; display: flex; align-items: center; gap: 6px;
-            white-space: nowrap;
+            color: var(--text-main); padding: 6px 10px; border-radius: 8px; cursor: pointer;
+            font-size: 11px; font-family: 'JetBrains Mono', monospace; font-weight: 600;
+            transition: all 0.2s ease; display: flex; align-items: center; gap: 4px;
+            white-space: nowrap; height: 32px;
         }
-        .dock-btn:hover {
-            background: rgba(0, 243, 255, 0.2); border-color: var(--accent-color);
-            box-shadow: 0 0 12px var(--accent-glow); color: #fff;
+        .dock-btn:hover, .dock-btn:active {
+            background: rgba(0, 243, 255, 0.2); border-color: var(--accent-color); color: #fff;
         }
         .dock-btn.active {
             background: var(--accent-color); color: #05070b; border-color: var(--accent-color);
         }
-        .dock-divider { width: 1px; background: var(--border-color); margin: 2px 2px; }
+        .dock-divider { width: 1px; background: var(--border-color); margin: 2px 1px; height: 24px; display: none; }
+        @media(min-width: 768px) { .dock-divider { display: block; } }
 
         /* Toast notification */
         #toast {
-            position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%);
+            position: absolute; bottom: 95px; left: 50%; transform: translateX(-50%);
             z-index: 2000; background: rgba(0, 243, 255, 0.15); border: 1px solid var(--accent-color);
-            color: var(--accent-color); padding: 8px 16px; border-radius: 6px; font-size: 12px;
+            color: var(--accent-color); padding: 6px 14px; border-radius: 6px; font-size: 11px;
             font-family: 'JetBrains Mono', monospace; backdrop-filter: blur(8px);
-            display: none; box-shadow: 0 0 15px var(--accent-glow);
+            display: none; box-shadow: 0 0 15px var(--accent-glow); text-align: center;
         }
 
-        /* Marker label modal */
+        /* Marker modal */
         #marker-modal-backdrop {
-            position: absolute; inset: 0; z-index: 3000; background: rgba(0,0,0,0.55);
-            display: none; align-items: center; justify-content: center;
+            position: absolute; inset: 0; z-index: 3000; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center; padding: 20px;
         }
         #marker-modal {
             background: var(--panel-bg); border: 1px solid var(--accent-color);
-            border-radius: 12px; padding: 18px 20px; width: 260px;
+            border-radius: 12px; padding: 16px; width: 100%; max-width: 280px;
             box-shadow: 0 0 30px var(--accent-glow); font-family: 'JetBrains Mono', monospace;
         }
-        #marker-modal h4 { margin: 0 0 10px 0; color: var(--accent-color); font-size: 12px; letter-spacing: 1px; }
+        #marker-modal h4 { margin: 0 0 8px 0; color: var(--accent-color); font-size: 11.5px; }
         #marker-modal input {
             width: 100%; background: rgba(0,0,0,0.4); border: 1px solid var(--border-color);
-            color: var(--text-main); padding: 8px; border-radius: 6px; font-family: inherit; font-size: 11px;
-            outline: none; margin-bottom: 12px;
+            color: var(--text-main); padding: 7px; border-radius: 6px; font-size: 11px;
+            outline: none; margin-bottom: 10px;
         }
-        #marker-modal input:focus { border-color: var(--accent-color); }
-        #marker-modal .modal-actions { display: flex; gap: 8px; justify-content: flex-end; }
+        #marker-modal .modal-actions { display: flex; gap: 6px; justify-content: flex-end; }
         #marker-modal button {
-            font-family: inherit; font-size: 11px; padding: 6px 12px; border-radius: 6px; cursor: pointer;
+            font-family: inherit; font-size: 10.5px; padding: 5px 10px; border-radius: 6px; cursor: pointer;
             border: 1px solid var(--border-color); background: rgba(0,243,255,0.08); color: var(--text-main);
         }
         #marker-modal button.primary { background: var(--accent-color); color: #05070b; border-color: var(--accent-color); font-weight: 700; }
 
-        /* Mode banner */
         #mode-banner {
-            position: absolute; top: 20px; left: 50%; transform: translateX(-50%);
-            z-index: 999; background: rgba(0,0,0,0.55); border: 1px solid var(--accent-color);
-            color: var(--accent-color); padding: 6px 14px; border-radius: 20px; font-size: 10.5px;
-            font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; display: none;
+            position: absolute; top: 15px; left: 50%; transform: translateX(-50%);
+            z-index: 999; background: rgba(0,0,0,0.7); border: 1px solid var(--accent-color);
+            color: var(--accent-color); padding: 5px 12px; border-radius: 20px; font-size: 10px;
+            font-family: 'JetBrains Mono', monospace; display: none; text-align: center; width: 90vw; max-width: 320px;
         }
 
         #cesiumContainer .cesium-viewer-bottom { display: none !important; }
@@ -179,104 +177,98 @@
 </head>
 <body>
 
-    <!-- 3D Globe Container -->
     <div id="cesiumContainer"></div>
 
-    <!-- Title Bar -->
     <div id="title-bar">
-        <h1><span>🌐</span> GOD'S EYE <span style="color: #fff;">VIEW</span></h1>
-        <p class="subtitle">NO PLACE LEFT BEHIND · TACTICAL CONSOLE</p>
+        <h1><span>🌐</span> GOD'S EYE</h1>
+        <p class="subtitle">TACTICAL CONSOLE</p>
         <div id="search-row">
-            <input id="geo-search" type="text" placeholder="Search location / city / landmark..." onkeydown="if(event.key==='Enter') searchLocation();">
+            <input id="geo-search" type="text" placeholder="Search location..." onkeydown="if(event.key==='Enter') searchLocation();">
             <button id="geo-search-btn" onclick="searchLocation()">
-                <span class="material-symbols-outlined" style="font-size: 16px;">search</span>
+                <span class="material-symbols-outlined" style="font-size: 15px;">search</span>
             </button>
         </div>
         <div id="search-results"></div>
     </div>
 
-    <!-- Style indicator -->
     <div id="style-indicator">
-        <span class="indicator-label">ACTIVE STYLE</span>
-        <span class="indicator-value" id="active-style-name">DARK TACTICAL</span>
+        <span class="indicator-label">THEME</span>
+        <span class="indicator-value" id="active-style-name">DARK</span>
         <span id="indicator-clock">--:--:--</span>
     </div>
 
-    <!-- Mode banner -->
     <div id="mode-banner">MODE ACTIVE</div>
 
-    <!-- Coordinates readout -->
     <div id="coord-panel">
         <div class="row"><span>LAT</span><b id="coord-lat">--</b></div>
         <div class="row"><span>LON</span><b id="coord-lon">--</b></div>
         <div class="row"><span>ALT</span><b id="coord-alt">--</b></div>
-        <div class="row"><span>HDG</span><b id="coord-hdg">--</b></div>
     </div>
 
-    <!-- Info / weather / measure panel -->
     <div id="info-panel">
         <h3><span id="info-title">INFO</span><span class="close-btn" onclick="closeInfoPanel()">✕</span></h3>
         <div id="info-body"></div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast">System Initialized Successfully</div>
+    <div id="toast">System Online</div>
 
-    <!-- Marker label modal -->
     <div id="marker-modal-backdrop">
         <div id="marker-modal">
-            <h4>NAME THIS MARKER</h4>
-            <input id="marker-label-input" type="text" placeholder="e.g. Forward Base 7" maxlength="40">
+            <h4>NAME PIN</h4>
+            <input id="marker-label-input" type="text" placeholder="Base name..." maxlength="30">
             <div class="modal-actions">
                 <button onclick="cancelMarker()">Cancel</button>
-                <button class="primary" onclick="confirmMarker()">Drop Pin</button>
+                <button class="primary" onclick="confirmMarker()">Save</button>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Command Dock -->
+    <!-- Command Dock -->
     <div id="command-dock">
-        <button class="dock-btn" onclick="flyToLocation(23.8103, 90.4125, 120000, 'Dhaka HQ')">
-            <span class="material-symbols-outlined" style="font-size: 16px;">my_location</span> Dhaka HQ
+        <button class="dock-btn" onclick="flyToLocation(23.8103, 90.4125, 12000, 'Dhaka HQ')">
+            <span class="material-symbols-outlined" style="font-size: 15px;">my_location</span> HQ
         </button>
-        <button class="dock-btn" onclick="flyToLocation(37.7749, -122.4194, 180000, 'San Francisco')">
-            <span class="material-symbols-outlined" style="font-size: 16px;">explore</span> SF Bay
+        <button class="dock-btn" onclick="flyToLocation(37.7749, -122.4194, 18000, 'SF Bay')">
+            <span class="material-symbols-outlined" style="font-size: 15px;">explore</span> SF
+        </button>
+        <button class="dock-btn" onclick="findMyLocation()">
+            <span class="material-symbols-outlined" style="font-size: 15px;">near_me</span> My Loc
         </button>
         <div class="dock-divider"></div>
         <button class="dock-btn" onclick="loadEarthquakes()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">public</span> Quakes
+            <span class="material-symbols-outlined" style="font-size: 15px;">public</span> Quakes
         </button>
         <button class="dock-btn" onclick="loadFlights()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">flight</span> Flights
+            <span class="material-symbols-outlined" style="font-size: 15px;">flight</span> Flights
         </button>
         <button class="dock-btn" id="iss-btn" onclick="toggleISS()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">satellite_alt</span> ISS Track
+            <span class="material-symbols-outlined" style="font-size: 15px;">satellite_alt</span> ISS
         </button>
         <div class="dock-divider"></div>
         <button class="dock-btn" id="marker-mode-btn" onclick="setMode('marker')">
-            <span class="material-symbols-outlined" style="font-size: 16px;">location_on</span> Drop Pin
+            <span class="material-symbols-outlined" style="font-size: 15px;">location_on</span> Pin
         </button>
         <button class="dock-btn" id="measure-mode-btn" onclick="setMode('measure')">
-            <span class="material-symbols-outlined" style="font-size: 16px;">straighten</span> Measure
+            <span class="material-symbols-outlined" style="font-size: 15px;">straighten</span> Measure
         </button>
         <button class="dock-btn" id="weather-mode-btn" onclick="setMode('weather')">
-            <span class="material-symbols-outlined" style="font-size: 16px;">cloud</span> Weather
+            <span class="material-symbols-outlined" style="font-size: 15px;">cloud</span> Weather
         </button>
         <button class="dock-btn" onclick="clearAllEntities()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">delete_sweep</span> Clear
+            <span class="material-symbols-outlined" style="font-size: 15px;">delete_sweep</span> Clear
         </button>
         <div class="dock-divider"></div>
         <button class="dock-btn" id="lighting-btn" onclick="toggleLighting()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">nights_stay</span> Day/Night
+            <span class="material-symbols-outlined" style="font-size: 15px;">nights_stay</span> Light
         </button>
         <button class="dock-btn" onclick="toggleFullscreen()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">fullscreen</span> Fullscreen
+            <span class="material-symbols-outlined" style="font-size: 15px;">fullscreen</span> Full
         </button>
         <button class="dock-btn" onclick="takeScreenshot()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">photo_camera</span> Capture
+            <span class="material-symbols-outlined" style="font-size: 15px;">photo_camera</span> Snap
         </button>
         <button class="dock-btn" onclick="toggleStyle()">
-            <span class="material-symbols-outlined" style="font-size: 16px;">palette</span> Theme
+            <span class="material-symbols-outlined" style="font-size: 15px;">palette</span> Theme
         </button>
     </div>
 
@@ -285,7 +277,39 @@
     <script>
         Cesium.Ion.defaultAccessToken = '';
 
-        // ডার্ক মোড এবং ব্লু গ্লোব সমস্যা সমাধানের জন্য কার্টোডিবি ডার্ক ম্যাটার টাইলস ব্যবহার করা হয়েছে[cite: 1]
+        // OpenSky API Credentials Configuration
+        // SECURITY NOTE: OpenSky retired Basic Auth (client_id:client_secret) in March 2026 -
+        // it now requires an OAuth2 client-credentials token exchange (see getOpenSkyToken below).
+        // Putting a real client_secret in client-side JS still means anyone who views page source
+        // can read it and use up your quota. If you plan to keep using authenticated access,
+        // the secret should live on a small backend/proxy you control, not in this file.
+        // Leave these blank to use OpenSky anonymously (works fine, just lower rate limits).
+        const OPENSKY_CONFIG = {
+            clientId: "",
+            clientSecret: ""
+        };
+        let openskyToken = null;
+        let openskyTokenExpiry = 0;
+
+        async function getOpenSkyToken() {
+            if (!OPENSKY_CONFIG.clientId || !OPENSKY_CONFIG.clientSecret) return null;
+            if (openskyToken && Date.now() < openskyTokenExpiry) return openskyToken;
+            const res = await fetch('https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: new URLSearchParams({
+                    grant_type: 'client_credentials',
+                    client_id: OPENSKY_CONFIG.clientId,
+                    client_secret: OPENSKY_CONFIG.clientSecret
+                })
+            });
+            if (!res.ok) throw new Error('OpenSky token request failed: ' + res.status);
+            const data = await res.json();
+            openskyToken = data.access_token;
+            openskyTokenExpiry = Date.now() + ((data.expires_in || 1500) - 60) * 1000;
+            return openskyToken;
+        }
+
         const viewer = new Cesium.Viewer('cesiumContainer', {
             animation: false,
             baseLayerPicker: false,
@@ -296,158 +320,243 @@
             timeline: false,
             navigationHelpButton: false,
             imageryProvider: new Cesium.UrlTemplateImageryProvider({
-                url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-                subdomains: ['a', 'b', 'c', 'd'],
-                maximumLevel: 19,
-                credit: 'CartoDB Dark Matter'
+                url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                maximumLevel: 16,
+                credit: 'Esri Dark Gray Canvas'
             }),
             terrainProvider: new Cesium.EllipsoidTerrainProvider(),
             requestRenderMode: false
         });
 
-        // গ্লোবের ব্যাকগ্রাউন্ড কালার একদম ডার্ক করে দেওয়া হলো যাতে নীল ভাব না থাকে[cite: 1]
         viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#05070b');
         viewer.cesiumWidget.creditContainer.style.display = 'none';
 
-        // ডিফল্ট ক্যামেরা পজিশন
         viewer.camera.setView({
             destination: Cesium.Cartesian3.fromDegrees(20.0, 20.0, 20000000.0)
         });
 
-        showToast("God's Eye View Console Online");
+        let myLocationEntity = null;
+        function findMyLocation() {
+            if (!navigator.geolocation) {
+                showToast('Geolocation Not Supported');
+                return;
+            }
+            showToast('Locating You...');
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const { latitude, longitude, accuracy } = pos.coords;
 
-        // ---------- টোস্ট মেসেজ ----------
+                    if (myLocationEntity) viewer.entities.remove(myLocationEntity);
+                    myLocationEntity = viewer.entities.add({
+                        position: Cesium.Cartesian3.fromDegrees(longitude, latitude),
+                        point: {
+                            pixelSize: 12,
+                            color: Cesium.Color.fromCssColorString('#00f3ff'),
+                            outlineColor: Cesium.Color.WHITE,
+                            outlineWidth: 2,
+                            disableDepthTestDistance: Number.POSITIVE_INFINITY
+                        },
+                        ellipse: {
+                            semiMinorAxis: accuracy,
+                            semiMajorAxis: accuracy,
+                            material: Cesium.Color.fromCssColorString('#00f3ff').withAlpha(0.15),
+                            outline: true,
+                            outlineColor: Cesium.Color.fromCssColorString('#00f3ff').withAlpha(0.5),
+                            height: 0
+                        },
+                        label: {
+                            text: 'YOU',
+                            font: '9.5pt monospace',
+                            fillColor: Cesium.Color.fromCssColorString('#00f3ff'),
+                            pixelOffset: new Cesium.Cartesian2(0, -18),
+                            disableDepthTestDistance: Number.POSITIVE_INFINITY
+                        }
+                    });
+
+                    viewer.camera.flyTo({
+                        destination: Cesium.Cartesian3.fromDegrees(longitude, latitude, 15000),
+                        duration: 2.0
+                    });
+
+                    showInfoPanel('YOUR LOCATION', [
+                        ['Lat', latitude.toFixed(4) + '°'],
+                        ['Lon', longitude.toFixed(4) + '°'],
+                        ['Accuracy', '±' + Math.round(accuracy) + ' m']
+                    ]);
+                    showToast('Location Found');
+                },
+                (err) => {
+                    console.error(err);
+                    let msg = 'Location Failed';
+                    if (err.code === 1) msg = 'Location Permission Denied';
+                    else if (err.code === 2) msg = 'Location Unavailable';
+                    else if (err.code === 3) msg = 'Location Timed Out';
+                    showToast(msg);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
         function showToast(message) {
             const toast = document.getElementById('toast');
             toast.innerText = message;
             toast.style.display = 'block';
             clearTimeout(toast._t);
-            toast._t = setTimeout(() => { toast.style.display = 'none'; }, 3000);
+            toast._t = setTimeout(() => { toast.style.display = 'none'; }, 2500);
         }
 
-        // ---------- ক্যামেরা ফ্লাই ----------
         function flyToLocation(lat, lon, height, name) {
             viewer.camera.flyTo({
                 destination: Cesium.Cartesian3.fromDegrees(lon, lat, height),
-                duration: 2.5
+                duration: 2.0
             });
-            showToast(`Target Acquired: ${name}`);
+            showToast(`Target: ${name}`);
         }
 
-        // ---------- ভূমিকম্প ডেটা ----------
         async function loadEarthquakes() {
-            showToast("Fetching USGS Seismic Activity...");
+            showToast("Fetching Seismic Data...");
             try {
                 const response = await fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/2.5_day.geojson');
                 const data = await response.json();
-
                 data.features.forEach(quake => {
                     const coords = quake.geometry.coordinates;
                     const magnitude = quake.properties.mag;
-                    const title = quake.properties.title;
-
                     viewer.entities.add({
-                        tag: 'quake',
                         position: Cesium.Cartesian3.fromDegrees(coords[0], coords[1], coords[2] * 1000),
-                        point: {
-                            pixelSize: Math.max(6, magnitude * 4),
-                            color: Cesium.Color.RED.withAlpha(0.85),
-                            outlineColor: Cesium.Color.WHITE,
-                            outlineWidth: 1.5
-                        },
-                        description: `<div style="color:#000;"><h3>${title}</h3><p><b>Magnitude:</b> ${magnitude}</p></div>`
+                        point: { pixelSize: Math.max(5, magnitude * 3), color: Cesium.Color.RED.withAlpha(0.85) }
                     });
                 });
-                showToast(`Loaded ${data.features.length} Seismic Pings`);
-            } catch (error) {
-                console.error(error);
-                showToast("Error Fetching Seismic Data");
-            }
+                showToast(`Loaded ${data.features.length} Quakes`);
+            } catch (e) { showToast("Failed to fetch quakes"); }
         }
 
-        // ---------- ফ্লাইট ডেটা ----------
         async function loadFlights() {
-            showToast("Acquiring Live Flight Vectors...");
+            showToast("Fetching Live Flights via OpenSky...");
             try {
-                const response = await fetch('https://opensky-network.org/api/states/all');
-                const data = await response.json();
+                const targetUrl = 'https://opensky-network.org/api/states/all';
+                let data = null;
+
+                // Try an authenticated direct request first (token never leaves your browser -
+                // it is NOT sent to the third-party proxy below).
+                try {
+                    const token = await getOpenSkyToken();
+                    if (token) {
+                        const res = await fetch(targetUrl, { headers: { 'Authorization': `Bearer ${token}` } });
+                        if (res.ok) data = await res.json();
+                    }
+                } catch (authErr) {
+                    console.warn('OpenSky authenticated request failed, falling back to anonymous:', authErr);
+                }
+
+                // Fallback: anonymous request via CORS proxy (rate-limited but no credentials needed)
+                if (!data) {
+                    const proxyUrl = 'https://api.allorigins.win/raw?url=' + encodeURIComponent(targetUrl);
+                    const response = await fetch(proxyUrl);
+                    data = await response.json();
+                }
 
                 if (data && data.states) {
                     let count = 0;
-                    data.states.slice(0, 60).forEach(flight => {
-                        const lon = flight[5];
-                        const lat = flight[6];
-                        const callsign = flight[1] ? flight[1].trim() : "TRK-AIR";
-                        const altitude = flight[7] || 8000;
-
+                    data.states.slice(0, 50).forEach(flight => {
+                        const lon = flight[5], lat = flight[6];
+                        const callsign = flight[1] ? flight[1].trim() : "AIR";
                         if (lon && lat) {
                             viewer.entities.add({
-                                tag: 'flight',
-                                position: Cesium.Cartesian3.fromDegrees(lon, lat, altitude),
-                                point: { pixelSize: 7, color: Cesium.Color.CYAN },
-                                label: {
-                                    text: callsign,
-                                    font: '10pt monospace',
-                                    fillColor: Cesium.Color.WHITE,
-                                    pixelOffset: new Cesium.Cartesian2(0, -15),
-                                    backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
-                                    showBackground: true
-                                }
+                                position: Cesium.Cartesian3.fromDegrees(lon, lat, flight[7] || 8000),
+                                point: { pixelSize: 6, color: Cesium.Color.CYAN },
+                                label: { text: callsign, font: '9pt monospace', fillColor: Cesium.Color.WHITE, pixelOffset: new Cesium.Cartesian2(0, -12) }
                             });
                             count++;
                         }
                     });
-                    showToast(`Tracking ${count} Active Air Units`);
+                    showToast(`Tracking ${count} Flights`);
+                } else {
+                    showToast("No active flight states returned");
                 }
-            } catch (error) {
-                console.error(error);
-                showToast("Flight API Restricted / Blocked");
+            } catch (e) { 
+                console.error(e);
+                showToast("Flight API Error / Network Blocked"); 
             }
         }
 
-        // ---------- ISS লাইভ ট্র্যাকিং ----------
-        let issEntity = null;
-        let issInterval = null;
-        let issTracking = false;
+        // Draws a simple recognizable ISS silhouette (solar arrays + truss + modules)
+        // as a canvas image, used as a billboard so it reads as "the ISS" at a glance.
+        function createISSIcon() {
+            const w = 72, h = 32;
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            const cy = h / 2;
 
+            function solarArray(x) {
+                ctx.fillStyle = '#1b3a6b';
+                ctx.strokeStyle = '#5dd6ff';
+                ctx.lineWidth = 0.6;
+                ctx.fillRect(x, cy - 6, 16, 12);
+                ctx.strokeRect(x, cy - 6, 16, 12);
+                for (let i = 1; i < 4; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(x + i * 4, cy - 6);
+                    ctx.lineTo(x + i * 4, cy + 6);
+                    ctx.stroke();
+                }
+            }
+
+            // left + right solar panel arrays
+            solarArray(2);
+            solarArray(54);
+
+            // central truss (horizontal beam connecting the arrays)
+            ctx.strokeStyle = '#cfd8e3';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(18, cy);
+            ctx.lineTo(54, cy);
+            ctx.stroke();
+
+            // main modules (capsule shapes) clustered on the truss
+            ctx.fillStyle = '#e8edf2';
+            ctx.strokeStyle = '#9aa7b5';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(26, cy - 4, 20, 8, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = '#c7ced6';
+            ctx.beginPath();
+            ctx.roundRect(30, cy - 9, 8, 6, 3);
+            ctx.fill();
+
+            return canvas.toDataURL('image/png');
+        }
+        const ISS_ICON_URL = createISSIcon();
+
+        let issEntity = null, issInterval = null, issTracking = false;
         async function updateISS(flyTo) {
             try {
                 const res = await fetch('https://api.wheretheiss.at/v1/satellites/25544');
                 const data = await res.json();
                 const pos = Cesium.Cartesian3.fromDegrees(data.longitude, data.latitude, data.altitude * 1000);
-
                 if (!issEntity) {
                     issEntity = viewer.entities.add({
-                        tag: 'iss',
                         position: pos,
-                        point: { pixelSize: 12, color: Cesium.Color.YELLOW, outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
-                        label: {
-                            text: 'ISS',
-                            font: '11pt monospace',
-                            fillColor: Cesium.Color.YELLOW,
-                            pixelOffset: new Cesium.Cartesian2(0, -18),
-                            backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
-                            showBackground: true
-                        }
+                        billboard: {
+                            image: ISS_ICON_URL,
+                            width: 54, height: 24,
+                            scaleByDistance: new Cesium.NearFarScalar(1.0e6, 1.4, 2.0e7, 0.5),
+                            disableDepthTestDistance: Number.POSITIVE_INFINITY
+                        },
+                        label: { text: 'ISS', font: '10pt monospace', fillColor: Cesium.Color.YELLOW, pixelOffset: new Cesium.Cartesian2(0, -20) }
                     });
-                } else {
-                    issEntity.position = pos;
-                }
-
-                if (flyTo) {
-                    viewer.camera.flyTo({ destination: pos, duration: 2.0 });
-                }
-
+                } else { issEntity.position = pos; }
+                if (flyTo) viewer.camera.flyTo({ destination: pos, duration: 2.0 });
                 showInfoPanel('ISS TELEMETRY', [
-                    ['Latitude', data.latitude.toFixed(3) + '°'],
-                    ['Longitude', data.longitude.toFixed(3) + '°'],
-                    ['Altitude', data.altitude.toFixed(1) + ' km'],
-                    ['Velocity', data.velocity.toFixed(0) + ' km/h']
+                    ['Lat/Lon', `${data.latitude.toFixed(2)}°, ${data.longitude.toFixed(2)}°`],
+                    ['Altitude', `${data.altitude.toFixed(1)} km`],
+                    ['Velocity', `${data.velocity.toFixed(0)} km/h`]
                 ]);
-            } catch (e) {
-                console.error(e);
-                showToast('ISS Telemetry Unavailable');
-            }
+            } catch (e) { showToast('ISS Unavailable'); }
         }
 
         function toggleISS() {
@@ -457,15 +566,14 @@
                 btn.classList.add('active');
                 updateISS(true);
                 issInterval = setInterval(() => updateISS(false), 5000);
-                showToast('ISS Tracking Engaged');
+                showToast('ISS Tracking On');
             } else {
                 btn.classList.remove('active');
                 clearInterval(issInterval);
-                showToast('ISS Tracking Disengaged');
+                showToast('ISS Tracking Off');
             }
         }
 
-        // ---------- ইন্টারঅ্যাকশন মোড: marker / measure / weather ----------
         let currentMode = null;
         const modeButtons = {
             marker: document.getElementById('marker-mode-btn'),
@@ -473,293 +581,254 @@
             weather: document.getElementById('weather-mode-btn')
         };
         const modeBanner = document.getElementById('mode-banner');
-        const modeLabels = {
-            marker: 'CLICK GLOBE TO DROP A PIN',
-            measure: 'CLICK TWO POINTS TO MEASURE DISTANCE',
-            weather: 'CLICK GLOBE TO PULL LIVE WEATHER'
-        };
+        const modeLabels = { marker: 'TAP GLOBE TO DROP PIN', measure: 'TAP TWO POINTS TO MEASURE', weather: 'TAP GLOBE FOR WEATHER' };
 
         function setMode(mode) {
             currentMode = (currentMode === mode) ? null : mode;
-            Object.keys(modeButtons).forEach(key => {
-                modeButtons[key].classList.toggle('active', key === currentMode);
-            });
+            Object.keys(modeButtons).forEach(key => modeButtons[key].classList.toggle('active', key === currentMode));
+            measurePoints = []; // always reset in-progress measurement when the mode changes
             if (currentMode) {
                 modeBanner.innerText = modeLabels[currentMode];
                 modeBanner.style.display = 'block';
-                showToast('Mode Engaged: ' + currentMode.toUpperCase());
+                showToast('Mode: ' + mode.toUpperCase());
             } else {
                 modeBanner.style.display = 'none';
-                measurePoints = [];
             }
         }
 
-        // ---------- ক্লিক হ্যান্ডলার ----------
         const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-        let pendingMarkerPosition = null;
-        let measurePoints = [];
+        let pendingMarkerPosition = null, measurePoints = [];
 
         handler.setInputAction(function (click) {
             const cartesian = viewer.camera.pickEllipsoid(click.position, viewer.scene.globe.ellipsoid);
             if (!cartesian || !currentMode) return;
-
             const cartographic = Cesium.Cartographic.fromCartesian(cartesian);
             const lon = Cesium.Math.toDegrees(cartographic.longitude);
             const lat = Cesium.Math.toDegrees(cartographic.latitude);
 
             if (currentMode === 'marker') {
                 pendingMarkerPosition = { lon, lat };
-                openMarkerModal();
+                document.getElementById('marker-modal-backdrop').style.display = 'flex';
+                document.getElementById('marker-label-input').value = '';
+                document.getElementById('marker-label-input').focus();
             } else if (currentMode === 'measure') {
-                handleMeasureClick(cartesian, lat, lon);
+                measurePoints.push({ cartesian, lat, lon });
+                viewer.entities.add({ position: cartesian, point: { pixelSize: 6, color: Cesium.Color.ORANGE } });
+                if (measurePoints.length === 2) {
+                    const geodesic = new Cesium.EllipsoidGeodesic(
+                        Cesium.Cartographic.fromDegrees(measurePoints[0].lon, measurePoints[0].lat),
+                        Cesium.Cartographic.fromDegrees(measurePoints[1].lon, measurePoints[1].lat)
+                    );
+                    const distKm = geodesic.surfaceDistance / 1000;
+                    viewer.entities.add({
+                        polyline: { positions: [measurePoints[0].cartesian, measurePoints[1].cartesian], width: 2, material: Cesium.Color.ORANGE }
+                    });
+                    showInfoPanel('MEASUREMENT', [
+                        ['Distance', distKm.toFixed(1) + ' km'],
+                        ['Miles', (distKm * 0.621).toFixed(1) + ' mi']
+                    ]);
+                    measurePoints = [];
+                    showToast('Measurement Done');
+                }
             } else if (currentMode === 'weather') {
                 fetchWeather(lat, lon);
             }
         }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-        // ---------- মার্কার মোডাল ----------
-        function openMarkerModal() {
-            document.getElementById('marker-modal-backdrop').style.display = 'flex';
-            document.getElementById('marker-label-input').value = '';
-            document.getElementById('marker-label-input').focus();
-        }
         function cancelMarker() {
             document.getElementById('marker-modal-backdrop').style.display = 'none';
             pendingMarkerPosition = null;
         }
         function confirmMarker() {
-            const label = document.getElementById('marker-label-input').value.trim() || 'Unnamed Marker';
+            const label = document.getElementById('marker-label-input').value.trim() || 'Pin';
             if (pendingMarkerPosition) {
                 viewer.entities.add({
-                    tag: 'marker',
                     position: Cesium.Cartesian3.fromDegrees(pendingMarkerPosition.lon, pendingMarkerPosition.lat),
-                    point: { pixelSize: 10, color: Cesium.Color.fromCssColorString('#00f3ff'), outlineColor: Cesium.Color.WHITE, outlineWidth: 2 },
-                    label: {
-                        text: label,
-                        font: '11pt monospace',
-                        fillColor: Cesium.Color.fromCssColorString('#00f3ff'),
-                        pixelOffset: new Cesium.Cartesian2(0, -18),
-                        backgroundColor: Cesium.Color.BLACK.withAlpha(0.6),
-                        showBackground: true
-                    }
+                    point: { pixelSize: 8, color: Cesium.Color.fromCssColorString('#00f3ff') },
+                    label: { text: label, font: '9.5pt monospace', fillColor: Cesium.Color.fromCssColorString('#00f3ff'), pixelOffset: new Cesium.Cartesian2(0, -15) }
                 });
-                showToast(`Pin Dropped: ${label}`);
+                showToast(`Pin Saved: ${label}`);
             }
-            document.getElementById('marker-modal-backdrop').style.display = 'none';
-            pendingMarkerPosition = null;
+            cancelMarker();
         }
 
-        // ---------- দূরত্ব পরিমাপ ----------
-        function handleMeasureClick(cartesian, lat, lon) {
-            measurePoints.push({ cartesian, lat, lon });
-
-            viewer.entities.add({
-                tag: 'measure',
-                position: cartesian,
-                point: { pixelSize: 8, color: Cesium.Color.ORANGE }
-            });
-
-            if (measurePoints.length === 2) {
-                const geodesic = new Cesium.EllipsoidGeodesic(
-                    Cesium.Cartographic.fromDegrees(measurePoints[0].lon, measurePoints[0].lat),
-                    Cesium.Cartographic.fromDegrees(measurePoints[1].lon, measurePoints[1].lat)
-                );
-                const distanceKm = geodesic.surfaceDistance / 1000;
-
-                viewer.entities.add({
-                    tag: 'measure',
-                    polyline: {
-                        positions: [measurePoints[0].cartesian, measurePoints[1].cartesian],
-                        width: 3,
-                        material: Cesium.Color.ORANGE,
-                        clampToGround: true
-                    }
-                });
-
-                showInfoPanel('DISTANCE MEASUREMENT', [
-                    ['Point A', measurePoints[0].lat.toFixed(2) + ', ' + measurePoints[0].lon.toFixed(2)],
-                    ['Point B', measurePoints[1].lat.toFixed(2) + ', ' + measurePoints[1].lon.toFixed(2)],
-                    ['Distance', distanceKm.toFixed(1) + ' km'],
-                    ['Distance (mi)', (distanceKm * 0.621371).toFixed(1) + ' mi']
-                ]);
-
-                measurePoints = [];
-                showToast('Distance Calculated');
-            }
-        }
-
-        // ---------- আবহাওয়া লুকআপ ----------
         async function fetchWeather(lat, lon) {
-            showToast('Fetching Weather Telemetry...');
+            showToast('Fetching Weather...');
             try {
                 const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`);
                 const data = await res.json();
                 const w = data.current_weather;
-
-                viewer.entities.add({
-                    tag: 'weather',
-                    position: Cesium.Cartesian3.fromDegrees(lon, lat),
-                    point: { pixelSize: 9, color: Cesium.Color.fromCssColorString('#5dff9e'), outlineColor: Cesium.Color.WHITE, outlineWidth: 1.5 }
-                });
-
-                showInfoPanel('WEATHER TELEMETRY', [
-                    ['Location', lat.toFixed(2) + ', ' + lon.toFixed(2)],
-                    ['Temperature', w.temperature + ' °C'],
-                    ['Wind Speed', w.windspeed + ' km/h'],
-                    ['Wind Dir', w.winddirection + '°'],
-                    ['Condition Code', weatherCodeLabel(w.weathercode)]
+                showInfoPanel('WEATHER', [
+                    ['Temp', w.temperature + ' °C'],
+                    ['Wind', w.windspeed + ' km/h']
                 ]);
-                showToast('Weather Telemetry Received');
-            } catch (e) {
-                console.error(e);
-                showToast('Weather Fetch Failed');
-            }
+                showToast('Weather Loaded');
+            } catch (e) { showToast('Weather Failed'); }
         }
 
-        function weatherCodeLabel(code) {
-            const map = {
-                0: 'Clear Sky', 1: 'Mainly Clear', 2: 'Partly Cloudy', 3: 'Overcast',
-                45: 'Fog', 48: 'Rime Fog', 51: 'Light Drizzle', 61: 'Rain',
-                71: 'Snow', 80: 'Rain Showers', 95: 'Thunderstorm'
-            };
-            return map[code] || ('Code ' + code);
-        }
-
-        // ---------- ইনফো প্যানেল ----------
         function showInfoPanel(title, rows) {
             document.getElementById('info-title').innerText = title;
-            const body = document.getElementById('info-body');
-            body.innerHTML = rows.map(r => `<div class="line"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
+            document.getElementById('info-body').innerHTML = rows.map(r => `<div class="line"><span>${r[0]}</span><span>${r[1]}</span></div>`).join('');
             document.getElementById('info-panel').style.display = 'block';
         }
-        function closeInfoPanel() {
-            document.getElementById('info-panel').style.display = 'none';
-        }
+        function closeInfoPanel() { document.getElementById('info-panel').style.display = 'none'; }
 
-        // ---------- সব এন্টিটি ক্লিয়ার ----------
         function clearAllEntities() {
             viewer.entities.removeAll();
             issEntity = null;
             if (issTracking) toggleISS();
             closeInfoPanel();
-            showToast('All Overlays Cleared');
+            showToast('Cleared All');
         }
 
-        // ---------- জিও সার্চ (Nominatim) ----------
+        let lastSearchResults = [];
         async function searchLocation() {
             const query = document.getElementById('geo-search').value.trim();
             if (!query) return;
-            showToast('Searching: ' + query);
+            showToast('Searching...');
             const resultsEl = document.getElementById('search-results');
             try {
-                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=5&q=${encodeURIComponent(query)}`);
+                const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&limit=4&q=${encodeURIComponent(query)}`);
                 const data = await res.json();
-                if (!data.length) {
-                    resultsEl.innerHTML = '<div class="search-result-item">No results found</div>';
-                    resultsEl.style.display = 'block';
-                    return;
-                }
-                resultsEl.innerHTML = data.map(place => `
-                    <div class="search-result-item" onclick='selectSearchResult(${place.lat}, ${place.lon}, "${place.display_name.replace(/"/g, "").replace(/'/g, "")}")'>
-                        ${place.display_name}
-                    </div>
-                `).join('');
+                if (!data.length) { resultsEl.style.display = 'none'; showToast('No results'); return; }
+                lastSearchResults = data;
+                // Use data-index + textContent (not string-built onclick/innerHTML) so place
+                // names with quotes/apostrophes or HTML-special characters can't break the page.
+                resultsEl.innerHTML = '';
+                data.forEach((p, i) => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.dataset.index = i;
+                    item.textContent = p.display_name.split(',')[0];
+                    item.addEventListener('click', () => selectSearchResult(i));
+                    resultsEl.appendChild(item);
+                });
                 resultsEl.style.display = 'block';
-            } catch (e) {
-                console.error(e);
-                showToast('Geocoding Service Unreachable');
-            }
+            } catch (e) { showToast('Search Failed'); }
         }
-        function selectSearchResult(lat, lon, name) {
-            flyToLocation(parseFloat(lat), parseFloat(lon), 100000, name.split(',')[0]);
+        function selectSearchResult(index) {
+            const p = lastSearchResults[index];
+            if (!p) return;
+            flyToLocation(parseFloat(p.lat), parseFloat(p.lon), 8000, p.display_name.split(',')[0]);
             document.getElementById('search-results').style.display = 'none';
             document.getElementById('geo-search').value = '';
         }
 
-        // ---------- দিন/রাত আলো ----------
         let lightingOn = false;
         function toggleLighting() {
             lightingOn = !lightingOn;
             viewer.scene.globe.enableLighting = lightingOn;
             document.getElementById('lighting-btn').classList.toggle('active', lightingOn);
-            showToast(lightingOn ? 'Solar Lighting Engaged (Live Day/Night Terminator)' : 'Solar Lighting Disengaged');
+            showToast(lightingOn ? 'Lighting On' : 'Lighting Off');
         }
 
-        // ---------- ফুলস্ক্রিন ----------
         function toggleFullscreen() {
-            if (!document.fullscreenElement) {
-                document.documentElement.requestFullscreen().catch(() => showToast('Fullscreen Not Permitted'));
-                showToast('Fullscreen Engaged');
-            } else {
-                document.exitFullscreen();
-                showToast('Fullscreen Exited');
-            }
+            if (!document.fullscreenElement) { document.documentElement.requestFullscreen().catch(()=>{}); }
+            else { document.exitFullscreen(); }
         }
 
-        // ---------- স্ক্রিনশট ----------
         function takeScreenshot() {
             viewer.render();
-            const canvas = viewer.scene.canvas;
             const link = document.createElement('a');
-            link.download = `godseye-capture-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `snapshot-${Date.now()}.png`;
+            link.href = viewer.scene.canvas.toDataURL('image/png');
             link.click();
-            showToast('Snapshot Captured');
-        }
-
-        // ---------- লাইভ কোঅর্ডিনেট রিডআউট ----------
-        function headingToCompass(headingRad) {
-            const deg = Cesium.Math.toDegrees(headingRad);
-            const dirs = ['N','NE','E','SE','S','SW','W','NW'];
-            const idx = Math.round(((deg % 360) / 45)) % 8;
-            return `${deg.toFixed(0)}° ${dirs[idx]}`;
+            showToast('Captured');
         }
 
         viewer.camera.changed.addEventListener(updateCoordPanel);
         viewer.scene.postRender.addEventListener(updateCoordPanel);
-
         function updateCoordPanel() {
             const carto = viewer.camera.positionCartographic;
-            document.getElementById('coord-lat').innerText = Cesium.Math.toDegrees(carto.latitude).toFixed(3) + '°';
-            document.getElementById('coord-lon').innerText = Cesium.Math.toDegrees(carto.longitude).toFixed(3) + '°';
-            document.getElementById('coord-alt').innerText = (carto.height / 1000).toFixed(1) + ' km';
-            document.getElementById('coord-hdg').innerText = headingToCompass(viewer.camera.heading);
+            document.getElementById('coord-lat').innerText = Cesium.Math.toDegrees(carto.latitude).toFixed(2) + '°';
+            document.getElementById('coord-lon').innerText = Cesium.Math.toDegrees(carto.longitude).toFixed(2) + '°';
+            document.getElementById('coord-alt').innerText = (carto.height / 1000).toFixed(0) + ' km';
         }
-        updateCoordPanel();
 
-        // ---------- লাইভ ঘড়ি ----------
-        function updateClock() {
+        setInterval(() => {
             const now = new Date();
-            document.getElementById('indicator-clock').innerText = now.toUTCString().split(' ')[4] + ' UTC';
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
+            const clockEl = document.getElementById('indicator-clock');
+            if(clockEl) clockEl.innerText = now.toUTCString().split(' ')[4] + ' UTC';
+        }, 1000);
 
-        // ---------- স্টাইল পরিবর্তন (Theme Toggle) ----------
-        let isDarkStyle = true;
-        function toggleStyle() {
-            isDarkStyle = !isDarkStyle;
-            const nameEl = document.getElementById('active-style-name');
-            if (isDarkStyle) {
-                nameEl.innerText = "DARK TACTICAL";
-                viewer.scene.imageryLayers.removeAll();
-                viewer.scene.imageryLayers.addImageryProvider(new Cesium.UrlTemplateImageryProvider({
-                    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-                    subdomains: ['a', 'b', 'c', 'd'],
-                    maximumLevel: 19
-                }));
-                viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#05070b');
-                showToast("Style Switched: DARK TACTICAL");
-            } else {
-                nameEl.innerText = "SATELLITE / LIGHT";
-                viewer.scene.imageryLayers.removeAll();
-                viewer.scene.imageryLayers.addImageryProvider(new Cesium.OpenStreetMapImageryProvider({
-                    url: 'https://a.tile.openstreetmap.org/'
-                }));
-                viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString('#0a192f');
-                showToast("Style Switched: STANDARD MAP");
+        const mapStyles = [
+            { name: 'DARK',      base: 'DARK',      overlay: 'DARK_LABELS',   baseColor: '#05070b' },
+            { name: 'ROADMAP',   base: 'ROADMAP',   overlay: null,            baseColor: '#e5e3df' },
+            { name: 'SATELLITE', base: 'SATELLITE', overlay: null,            baseColor: '#000000' },
+            { name: 'TERRAIN',   base: 'TERRAIN',   overlay: null,            baseColor: '#dfe6d5' },
+            { name: 'HYBRID',    base: 'SATELLITE', overlay: 'HYBRID_LABELS', baseColor: '#000000' }
+        ];
+        let currentStyleIndex = 0;
+        const tileProviderCache = {};
+
+        function getTileProvider(key) {
+            if (tileProviderCache[key]) return tileProviderCache[key];
+            let provider;
+            switch (key) {
+                case 'DARK':
+                    // Esri's free dark canvas basemap - no API key required (CartoDB's dark_all
+                    // now requires a key and shows an "API KEY REQUIRED" watermark instead of tiles).
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+                        maximumLevel: 16, credit: 'Esri Dark Gray Canvas'
+                    });
+                    break;
+                case 'DARK_LABELS':
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+                        maximumLevel: 16, credit: 'Esri Dark Gray Reference'
+                    });
+                    break;
+                case 'ROADMAP':
+                    // Esri's free street map - no API key required (CartoDB Voyager now requires one).
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',
+                        maximumLevel: 19, credit: 'Esri World Street Map'
+                    });
+                    break;
+                case 'SATELLITE':
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+                        maximumLevel: 19, credit: 'Esri World Imagery'
+                    });
+                    break;
+                case 'TERRAIN':
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+                        subdomains: ['a', 'b', 'c'], maximumLevel: 17, credit: 'OpenTopoMap'
+                    });
+                    break;
+                case 'HYBRID_LABELS':
+                    provider = new Cesium.UrlTemplateImageryProvider({
+                        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}',
+                        maximumLevel: 19, credit: 'Esri Boundaries & Places'
+                    });
+                    break;
+            }
+            tileProviderCache[key] = provider;
+            return provider;
+        }
+
+        function applyMapStyle(index) {
+            const style = mapStyles[index];
+            try {
+                viewer.scene.imageryLayers.removeAll(false); // false = keep cached providers alive for reuse
+                viewer.scene.imageryLayers.addImageryProvider(getTileProvider(style.base));
+                if (style.overlay) viewer.scene.imageryLayers.addImageryProvider(getTileProvider(style.overlay));
+                viewer.scene.globe.baseColor = Cesium.Color.fromCssColorString(style.baseColor);
+                document.getElementById('active-style-name').innerText = style.name;
+                showToast(style.name + ' Layout');
+            } catch (e) {
+                console.error('Map style change failed:', e);
+                showToast('Layout Change Failed');
             }
         }
+
+        function toggleStyle() {
+            currentStyleIndex = (currentStyleIndex + 1) % mapStyles.length;
+            applyMapStyle(currentStyleIndex);
+        }
+        applyMapStyle(0); // load DARK base + labels overlay on startup
     </script>
 </body>
 </html>
